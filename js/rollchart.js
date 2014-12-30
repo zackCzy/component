@@ -89,6 +89,7 @@ define(['jquery'],function($){
 							href:that.images.hrefs[i],
 							target:"_blank"
 						}).css({
+							
 							//"margin-left":-(-that.images.width)/2,
 						}).append(
 							$("<img/>").attr({
@@ -101,7 +102,9 @@ define(['jquery'],function($){
 							})
 						)
 					).css({
-						float:"left" 
+						float:"left",
+						width: that.images.width,
+						height: that.images.height
 					}).appendTo(rollchartUl);
 					
 					selectUl.append(
