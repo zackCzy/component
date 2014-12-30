@@ -20,7 +20,7 @@ define(['jquery'], function($) {
 		 * 				images:Array(new Image),//图片对象数组
 		 * 				alts:Array,//图像title 以及alt
 		 * 				width:int,(默认全屏)//轮播宽度
-		 * 				height:int,(默认500)//轮播高度
+		 * 				height:int,(默认全屏)//轮播高度
 		 * 				times:int(默认5000)//轮播时间
 		 * 				phone:Boolean//是否使用手机拖动事件
 		 * 				Loop:Boolean//是否循环播放
@@ -37,12 +37,18 @@ define(['jquery'], function($) {
 			}
 			this.images.urls = [];
 			this.images.hrefs = [];
-			this.images.height = 500;
+			this.images.height = (document.documentElement.scrollheight || document.body.scrollheight || window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);;
 			this.images.alts = [];
+			this.images.image=[];
 			for (var i = 0; i < images.image.length; i++) {
 				this.images.urls[i] = images.image[i].src;
 				this.images.hrefs[i] = "#";
 				this.images.alts[i] = "";
+				this.images.image[i]=images.image[i];
+			}
+			this.images.select={
+				over:{"background":"#EA5D52"},
+				out:{"background":"#FFFFFF"}
 			}
 			this.images.count = 0;
 			this.images.times = 5000;
@@ -64,7 +70,6 @@ define(['jquery'], function($) {
 			var rollchartUl = $("<ul id='rollchart'></ul>").css({
 				"width": that.images.width * that.images.urls.length,
 				display: "block",
-				overflow: "hidden",
 				height: "320px",
 				position: "absolute",
 				top: "0px",
@@ -72,7 +77,7 @@ define(['jquery'], function($) {
 				"list-style": "none"
 			});
 
-			var selectUl = $("<ul id='select_img'style='width:" + (that.images.urls.length * 35) + "px;'></ul>").css({
+			var selectUl = $("<ul id='select_img'style='width:" + (that.images.urls.length * 28+15) + "px;'></ul>").css({
 				"list-style": "none",
 				display: "block",
 				height: "30px",
@@ -83,6 +88,7 @@ define(['jquery'], function($) {
 
 			for (var i = 0; i < that.images.urls.length; i++) {
 				(function(n) {
+
 					$("<li></li>").append(
 						$("<a></a>").attr({
 							href: that.images.hrefs[i],
@@ -90,13 +96,15 @@ define(['jquery'], function($) {
 						}).css({
 							//"margin-left":-(-that.images.width)/2,
 						}).append(
+							
 							$("<img/>").attr({
 								src: that.images.urls[i],
 								title: that.images.alts[i],
 								alt: that.images.alts[i]
 							}).css({
-								width: that.images.width,
-								height: that.images.height
+								width:that.images.width,
+								height:that.images.height,
+								"background-position":"center center"
 							})
 						)
 					).css({
@@ -117,7 +125,7 @@ define(['jquery'], function($) {
 							float: "left"
 						})
 						.on("mouseover", function() {
-							$("#select_img li").eq(that.images.count).css("background", "#FFFFFF").end().eq(n).css("background", "#EA5D52");
+							$("#select_img li").eq(that.images.count).css(that.images.select.out).end().eq(n).css(that.images.select.over);
 							that.images.count = n;
 							$("#rollchart").stop().animate({
 								left: -(that.images.count * that.images.width)
@@ -154,7 +162,6 @@ define(['jquery'], function($) {
 		//Protype获取下一张轮播
 		nextPage: function() {
 			var _this = this;
-			console.log(this.images.count);
 			if (this.images.count + 1 > this.images.urls.length - 1) {
 				this.images.count = 0;
 			} else {
@@ -174,13 +181,15 @@ define(['jquery'], function($) {
 			} else {
 				--this.images.count;
 			}
-			console.log(this.images.count);
 			handlePage.call(this, this.images.count, function() {
 				_this.fire.call(_this, "prev");
 			});
 		},
 		getIndex: function() { //或许当前轮播位置
 			return this.images.count;
+		},
+		gerIndexDom:function(index){//或许当前轮播位置ImgDom元素
+			return $("#rollchart li img").get(index);
 		},
 		on: function(type, fn) { //绑定自定义事件
 			if (!(this.handle[type] instanceof Array)) {
@@ -211,8 +220,8 @@ define(['jquery'], function($) {
 		$("#rollchart").animate({
 			left: -(count * this.images.width)
 		}, fn);
-		$("#select_img li").eq(count).css("background", "#EA5D52");
-		$("#select_img li").eq(count - 1 < 0 ? this.images.urls.length - 1 : count - 1).css("background", "#FFFFFF");
+		$("#select_img li").eq(count).css(that.images.select.over);
+		$("#select_img li").eq(count - 1 < 0 ? this.images.urls.length - 1 : count - 1).css(that.images.select.out);
 		return count;
 	}
 	
@@ -222,7 +231,6 @@ define(['jquery'], function($) {
 		}
 		return false;
 	};
-	
 	//返回模块对象
 	return {
 		Rollchart: Rollchart
