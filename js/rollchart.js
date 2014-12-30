@@ -87,6 +87,7 @@ define(['jquery'], function($) {
 			});
 
 			for (var i = 0; i < that.images.urls.length; i++) {
+				
 				(function(n) {
 
 					$("<li></li>").append(
@@ -96,17 +97,62 @@ define(['jquery'], function($) {
 						}).css({
 							//"margin-left":-(-that.images.width)/2,
 						}).append(
-							
-							$("<img/>").attr({
-								src: that.images.urls[i],
-								title: that.images.alts[i],
-								alt: that.images.alts[i]
-							}).css({
-								width:that.images.width,
-								height:that.images.height,
-								"background-position":"center center"
-							})
-						)
+							(function(){		
+								var img=$("<img/>").attr({
+									src: that.images.urls[i],
+									title: that.images.alts[i],
+									alt: that.images.alts[i]
+								}).css({
+									width:that.images.width,
+									height:that.images.height,
+									"background-position":"center center"
+								});
+								
+								if(that.images.phone){
+									img.flag=false;
+									temp=img.get(0);
+									var sWidth=(document.documentElement.scrollWidth || document.body.scrollWidth || window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
+									temp.addEventListener("touchstart",function(event){
+										img.flag=true;
+										event.preventDefault();
+										clearInterval(that.time);
+										img.mx=event.touches[0].pageX+that.images.width*that.images.count;
+									});
+									temp.addEventListener("touchmove",function(event){
+										if(img.flag){
+											event.preventDefault();
+											var speed=event.touches[0].pageX-img.mx;
+											if(speed>0||speed<-that.images.width*(that.images.urls.length-1)){
+												img.flag=false;
+											}else{
+												$("#rollchart").css({
+														left:event.touches[0].pageX-img.mx
+												});
+											}	
+										}
+									});
+									temp.addEventListener("touchend",function(event){
+										if(img.flag){
+											event.preventDefault();
+											var realLeft=-(that.images.count * that.images.width);
+											var currentLeft=parseInt($("#rollchart").css("left"));
+											if(realLeft-currentLeft>that.images.width/2){
+												that.nextPage();
+											}else if(currentLeft-realLeft>that.images.width/2){
+												that.prevPage();
+											}else{
+												$("#rollchart").animate({
+													left: realLeft
+												});
+											}
+											img.flag=false;	
+											timeOpen();
+										}
+									});
+								}
+								return img;
+							})()
+						)	
 					).css({
 						float: "left",
 						width: that.images.width,
@@ -162,28 +208,17 @@ define(['jquery'], function($) {
 		//Protype获取下一张轮播
 		nextPage: function() {
 			var _this = this;
-			if (this.images.count + 1 > this.images.urls.length - 1) {
-				this.images.count = 0;
-			} else {
-				++this.images.count;
-			}
-			
-			handlePage.call(this, this.images.count, function() {
+			handlePage.call(this,function() {
 				_this.fire.call(_this, "next");
-			});
+			},true);
 
 		},
 		//Protype获取上一张轮播
 		prevPage: function() {
 			var _this = this;
-			if (this.images.count - 1 < 0) {
-				this.images.count =this.images.urls.length-1;
-			} else {
-				--this.images.count;
-			}
-			handlePage.call(this, this.images.count, function() {
+			handlePage.call(this,function() {
 				_this.fire.call(_this, "prev");
-			});
+			},false);
 		},
 		getIndex: function() { //或许当前轮播位置
 			return this.images.count;
@@ -216,13 +251,26 @@ define(['jquery'], function($) {
 	}
 	
 	//================工具函数=================================
-	function handlePage(count, fn) {
+	function handlePage(fn,b) {
+		var tempCount=this.images.count ;
+		if(b){
+			if (this.images.count + 1 > this.images.urls.length - 1) {
+				this.images.count = 0;
+			} else {
+				++this.images.count;
+			}	
+		}else{
+			if (this.images.count - 1 < 0) {
+				this.images.count =this.images.urls.length-1;
+			} else {
+				--this.images.count;
+			}		
+		}			
 		$("#rollchart").animate({
-			left: -(count * this.images.width)
+			left: -(this.images.count * this.images.width)
 		}, fn);
-		$("#select_img li").eq(count).css(that.images.select.over);
-		$("#select_img li").eq(count - 1 < 0 ? this.images.urls.length - 1 : count - 1).css(that.images.select.out);
-		return count;
+		$("#select_img li").eq(this.images.count).css(this.images.select.over);
+		$("#select_img li").eq(tempCount).css(this.images.select.out);
 	}
 	
 	function equals(es, fn) { // 比较方法是否重复

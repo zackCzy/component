@@ -12,12 +12,14 @@ require(['jquery','rollchart'],function($,r){
 	  	img2.src="img/img3.jpg";
 		var rollchart=new r.Rollchart();
 		rollchart.init({
-			image:[img1,img2,img1,img2,img1,img2,img1,img2,img1,img2,img1,img2,img1,img2,img1,img2,img1,img2,img1,img2,img1,img2,img1,img2,img1,img2,img1,img2],
+			image:[img2,img1,img2,img1,img1,img2,img1,img2],
 			alts:["环球高富1","环球高富2"],
+
 			select:{
 				over:{"background":"#000000"},
 				out:{"background":"#FFFFFF"}
-			}
+			},
+			phone:true
 		},"body");
 		$("#next").click(function(){
 			rollchart.nextPage();
