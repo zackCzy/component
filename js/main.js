@@ -14,6 +14,7 @@ require(['jquery','rollchart'],function($,r){
 		rollchart.init({
 			image:[img1,img2],
 			height:300,
+			width:500,
 			alts:["环球高富1","环球高富2"]
 		},"body");
 		$("#next").click(function(){
@@ -24,6 +25,8 @@ require(['jquery','rollchart'],function($,r){
 		});
 		rollchart.on("next",next);
 		rollchart.on("prev",prev);
+		rollchart.off("next",next);
+		rollchart.off("prev",prev);
 	});
 	function next(){
 			alert("123")

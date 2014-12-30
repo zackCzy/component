@@ -154,11 +154,13 @@ define(['jquery'], function($) {
 		//Protype获取下一张轮播
 		nextPage: function() {
 			var _this = this;
+			console.log(this.images.count);
 			if (this.images.count + 1 > this.images.urls.length - 1) {
 				this.images.count = 0;
 			} else {
 				++this.images.count;
 			}
+			
 			handlePage.call(this, this.images.count, function() {
 				_this.fire.call(_this, "next");
 			});
@@ -168,11 +170,11 @@ define(['jquery'], function($) {
 		prevPage: function() {
 			var _this = this;
 			if (this.images.count - 1 < 0) {
-				this.images.count = --this.images.urls.length;
+				this.images.count =this.images.urls.length-1;
 			} else {
 				--this.images.count;
 			}
-			
+			console.log(this.images.count);
 			handlePage.call(this, this.images.count, function() {
 				_this.fire.call(_this, "prev");
 			});
