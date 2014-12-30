@@ -14,9 +14,8 @@ require(['jquery','rollchart'],function($,r){
 		rollchart.init({
 			image:[img2,img1,img2,img1,img1,img2,img1,img2],
 			alts:["环球高富1","环球高富2"],
-
 			select:{
-				over:{"background":"#000000"},
+				over:{"background":"#FF4700"},
 				out:{"background":"#FFFFFF"}
 			},
 			phone:true
