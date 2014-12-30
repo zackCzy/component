@@ -16,5 +16,19 @@ require(['jquery','rollchart'],function($,r){
 			height:300,
 			alts:["环球高富1","环球高富2"]
 		},"body");
+		$("#next").click(function(){
+			rollchart.nextPage();
+		});
+		$("#prev").click(function(){
+			rollchart.prevPage();
+		});
+		rollchart.on("next",next);
+		rollchart.on("prev",prev);
 	});
+	function next(){
+			alert("123")
+	}
+	function prev(){
+			alert("321")
+	}
 });
