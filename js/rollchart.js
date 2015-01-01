@@ -6,6 +6,26 @@
  **/
 
 define(['jquery'], function($) {
+	/**
+		 * <pre>创建Roollchart对象</pre>
+		 * @method init 初始化
+		 * ---@param Object
+		 * ---@param Element
+		 * @method on     绑定自定义事件
+		 * ---@param Function
+		 * @method off    移除自定义事件
+		 * ---@param Function
+		 * @method fire   触发自定义事件
+		 * ---@param Function
+		 * @method getRollchart   获取构建出来的滚图Dom对象
+		 * @method getIndex   获取当前轮播位置
+		 * @method gerIndexDom   获取当前轮播图片Dom对象
+		 * @method setWidth   设置轮播宽度
+		 * @method setHeight   设置轮播高度
+		 * @method nextPage   下一张滚图
+		 * @method prevPage   上一张滚图
+		 * @method prevPage   上一张滚图
+	 * */
 	function Rollchart() {
 		//私有滚图JQ对象
 		var rollcharts = null;
