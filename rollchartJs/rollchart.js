@@ -84,8 +84,11 @@ define(['jquery'], function($) {
 				"z-index": 1,
 			}).hover(function() {
 				clearInterval(that.time);
-			}, timeOpen);
+			}, function(){
+				timeOpen.call(that);
+			});
 			//创建图片列表
+			
 			var rollchartUl = $("<ul></ul>").css({
 				width: that.images.width * that.images.urls.length,
 				display: "block",
@@ -154,12 +157,13 @@ define(['jquery'], function($) {
 						})
 						.on("mouseover", function() {
 							clearInterval(that.time);
+							console.log(that.time)
 							$("li",selectUl).eq(that.images.count).css(that.images.select.out).end().eq(n).css(that.images.select.over);
 							that.images.count = n;
 							$(rollchartUl).stop().animate({
 								left: -(that.images.count * that.images.width)
 							}, 500);
-							timeOpen();
+							//timeOpen.call(that);
 						})
 					);
 				})(i);
@@ -174,12 +178,8 @@ define(['jquery'], function($) {
 				}).append(selectUl)
 			);
 			//定时器开启
-			function timeOpen() {
-				that.time = setInterval(function() {
-					that.nextPage();
-				}, that.images.times);
-			}
-			timeOpen();
+			
+			timeOpen.call(that);
 			if (element != null && $(element).get(0) != undefined) {
 				$(element).append(rollchart);
 			}
@@ -278,7 +278,6 @@ define(['jquery'], function($) {
 			node.flag=true;
 			clearInterval(that.time);
 			node.mx=event.touches[0].pageX+that.images.width*that.images.count;
-			
 		});
 		node.addEventListener("touchmove",function(event){
 			if(node.flag){
@@ -308,11 +307,15 @@ define(['jquery'], function($) {
 						left: realLeft
 					});
 				}
-				that.time = setInterval(function() {
-					that.nextPage();
-				}, that.images.times);
+				timeOpen.call(that);
 			}
 		});
+	}
+	function timeOpen() {	
+		var that=this;
+		this.time = setInterval(function() {
+			that.nextPage();
+		}, this.images.times);
 	}
 	//返回模块对象
 	return {
