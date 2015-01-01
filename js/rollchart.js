@@ -153,11 +153,13 @@ define(['jquery'], function($) {
 							float: "left"
 						})
 						.on("mouseover", function() {
+							clearInterval(that.time);
 							$("li",selectUl).eq(that.images.count).css(that.images.select.out).end().eq(n).css(that.images.select.over);
 							that.images.count = n;
 							$(rollchartUl).stop().animate({
 								left: -(that.images.count * that.images.width)
 							}, 500);
+							timeOpen();
 						})
 					);
 				})(i);
