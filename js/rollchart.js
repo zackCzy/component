@@ -35,11 +35,11 @@ define(['jquery'], function($) {
 			if (parseInt(images.width) < 1000) {
 				this.images.width = 1000;
 			}
-			this.images.urls = [];
-			this.images.hrefs = [];
 			this.images.height = (document.documentElement.scrollheight || document.body.scrollheight || window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);;
 			this.images.alts = [];
 			this.images.image=[];
+			this.images.urls = [];
+			this.images.hrefs = [];
 			for (var i = 0; i < images.image.length; i++) {
 				this.images.urls[i] = images.image[i].src;
 				this.images.hrefs[i] = "#";
@@ -55,7 +55,7 @@ define(['jquery'], function($) {
 			$.extend(true, this.images, images);
 
 			//创建包裹滚轮
-			var rollchart = $("<div></div>").css({
+			var rollchart = $("<div class='rollchart-global-control'></div>").css({
 				"width": that.images.width,
 				"overflow": "hidden",
 				"height": that.images.height,
@@ -65,19 +65,21 @@ define(['jquery'], function($) {
 			}).hover(function() {
 				clearInterval(that.time);
 			}, timeOpen);
-
 			//创建图片列表
-			var rollchartUl = $("<ul id='rollchart'></ul>").css({
-				"width": that.images.width * that.images.urls.length,
+			var rollchartUl = $("<ul></ul>").css({
+				width: that.images.width * that.images.urls.length,
 				display: "block",
-				height: "320px",
+				height: that.images.height ,
 				position: "absolute",
 				top: "0px",
 				left: "0",
 				"list-style": "none"
 			});
-
-			var selectUl = $("<ul id='select_img'style='width:" + (that.images.urls.length * 28+15) + "px;'></ul>").css({
+			//如果支持手机拖动事件 进行绑定
+			if(this.images.phone){
+				phoneDrag.call(this,rollchartUl.get(0));						
+			}
+			var selectUl = $("<ul style='width:" + (that.images.urls.length * 28+15) + "px;'></ul>").css({
 				"list-style": "none",
 				display: "block",
 				height: "30px",
@@ -85,73 +87,33 @@ define(['jquery'], function($) {
 				zoom: 1,
 				position: "static"
 			});
-
+			this.ul={
+				rollchartUl:rollchartUl,
+				selectUl:selectUl
+			}
 			for (var i = 0; i < that.images.urls.length; i++) {
-				
-				(function(n) {
-
-					$("<li></li>").append(
-						$("<a></a>").attr({
+				//"margin-left":-(-that.images.width)/2,
+				(function(n) {	
+					$("<li class='rollchart-global-control'></li>").append(
+						$("<a class='rollchart-global-control'></a>").attr({
 							href: that.images.hrefs[i],
-							target: "_blank"
+							target: "_blank",
+                            title: that.images.alts[i],
+							alt: that.images.alts[i]
 						}).css({
-							//"margin-left":-(-that.images.width)/2,
+                           width:that.images.width,
+						   height:that.images.height,
+                           display:"block"
 						}).append(
-							(function(){		
-								var img=$("<img/>").attr({
-									src: that.images.urls[i],
-									title: that.images.alts[i],
-									alt: that.images.alts[i]
-								}).css({
-									width:that.images.width,
-									height:that.images.height,
-									"background-position":"center center"
-								});
-								
-								if(that.images.phone){
-									img.flag=false;
-									temp=img.get(0);
-									var sWidth=(document.documentElement.scrollWidth || document.body.scrollWidth || window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
-									temp.addEventListener("touchstart",function(event){
-										img.flag=true;
-										event.preventDefault();
-										clearInterval(that.time);
-										img.mx=event.touches[0].pageX+that.images.width*that.images.count;
-									});
-									temp.addEventListener("touchmove",function(event){
-										if(img.flag){
-											event.preventDefault();
-											var speed=event.touches[0].pageX-img.mx;
-											if(speed>0||speed<-that.images.width*(that.images.urls.length-1)){
-												img.flag=false;
-											}else{
-												$("#rollchart").css({
-														left:event.touches[0].pageX-img.mx
-												});
-											}	
-										}
-									});
-									temp.addEventListener("touchend",function(event){
-										if(img.flag){
-											event.preventDefault();
-											var realLeft=-(that.images.count * that.images.width);
-											var currentLeft=parseInt($("#rollchart").css("left"));
-											if(realLeft-currentLeft>that.images.width/2){
-												that.nextPage();
-											}else if(currentLeft-realLeft>that.images.width/2){
-												that.prevPage();
-											}else{
-												$("#rollchart").animate({
-													left: realLeft
-												});
-											}
-											img.flag=false;	
-											timeOpen();
-										}
-									});
-								}
-								return img;
-							})()
+							$("<img class='rollchart-global-control'/>").attr({
+								src: that.images.urls[i],
+								title: that.images.alts[i],
+								alt: that.images.alts[i]
+							}).css({
+								width:that.images.width,
+								height:that.images.height,
+								"background-position":"center center"
+							})
 						)	
 					).css({
 						float: "left",
@@ -164,16 +126,16 @@ define(['jquery'], function($) {
 						.css({
 							width: "13px",
 							height: "13px",
-							background: (i == 0 ? "#EA5D52" : "#fff"),
-							"border-radius": "16px",
+							background: (i == 0 ? (that.images.select.over.background) : (that.images.select.out.background)),
+							"border-radius": "13px",
 							margin: (i == 0 ? "6px 15px 0 10px" : "6px 15px 0 0"),
 							cursor: "pointer",
 							float: "left"
 						})
 						.on("mouseover", function() {
-							$("#select_img li").eq(that.images.count).css(that.images.select.out).end().eq(n).css(that.images.select.over);
+							$("li",selectUl).eq(that.images.count).css(that.images.select.out).end().eq(n).css(that.images.select.over);
 							that.images.count = n;
-							$("#rollchart").stop().animate({
+							$(rollchartUl).stop().animate({
 								left: -(that.images.count * that.images.width)
 							}, 500);
 						})
@@ -224,7 +186,15 @@ define(['jquery'], function($) {
 			return this.images.count;
 		},
 		gerIndexDom:function(index){//或许当前轮播位置ImgDom元素
-			return $("#rollchart li img").get(index);
+			return $("li img",rollchartUl).get(index);
+		},
+		setWidth:function(width){
+			this.images.width=width;
+			$(".rollchart-global-control").css("width",width);
+		},
+		setHeight:function(height){
+			this.images.height=height;
+			$(".rollchart-global-control").css("height",height);
 		},
 		on: function(type, fn) { //绑定自定义事件
 			if (!(this.handle[type] instanceof Array)) {
@@ -265,12 +235,12 @@ define(['jquery'], function($) {
 			} else {
 				--this.images.count;
 			}		
-		}			
-		$("#rollchart").animate({
+		}
+		this.ul.rollchartUl.animate({
 			left: -(this.images.count * this.images.width)
 		}, fn);
-		$("#select_img li").eq(this.images.count).css(this.images.select.over);
-		$("#select_img li").eq(tempCount).css(this.images.select.out);
+		$("li",this.ul.selectUl).eq(this.images.count).css(this.images.select.over)
+		.end().eq(tempCount).css(this.images.select.out);
 	}
 	
 	function equals(es, fn) { // 比较方法是否重复
@@ -279,6 +249,49 @@ define(['jquery'], function($) {
 		}
 		return false;
 	};
+	function phoneDrag(node){
+		node.flag=false;
+		var that = this;
+		node.addEventListener("touchstart",function(event){
+			node.flag=true;
+			clearInterval(that.time);
+			node.mx=event.touches[0].pageX+that.images.width*that.images.count;
+			
+		});
+		node.addEventListener("touchmove",function(event){
+			if(node.flag){
+				event.preventDefault();
+				var speed=event.touches[0].pageX-node.mx;
+				if(speed>0||speed<-that.images.width*(that.images.urls.length-1)){
+					node.flag=false;
+				}else{
+					$(node).css({
+							left:speed
+					});
+				}	
+			}
+		});
+		node.addEventListener("touchend",function(event){
+			if(node.flag){
+               event.preventDefault();
+                node.flag=false;
+				var realLeft=-(that.images.count * that.images.width);
+				var currentLeft=parseInt($(node).css("left"));
+				if(realLeft-currentLeft>that.images.width/2){
+					that.nextPage();
+				}else if(currentLeft-realLeft>that.images.width/2){
+					that.prevPage();
+				}else{
+					$(node).animate({
+						left: realLeft
+					});
+				}
+				that.time = setInterval(function() {
+					that.nextPage();
+				}, that.images.times);
+			}
+		});
+	}
 	//返回模块对象
 	return {
 		Rollchart: Rollchart

@@ -12,29 +12,11 @@ require(['jquery','rollchart'],function($,r){
 	  	img2.src="img/img3.jpg";
 		var rollchart=new r.Rollchart();
 		rollchart.init({
-			image:[img2,img1,img2,img1,img1,img2,img1,img2],
+			image:[img1,img2],
+			height:300,
 			alts:["环球高富1","环球高富2"],
-			select:{
-				over:{"background":"#FF4700"},
-				out:{"background":"#FFFFFF"}
-			},
 			phone:true
 		},"body");
-		$("#next").click(function(){
-			rollchart.nextPage();
-		});
-		$("#prev").click(function(){
-			rollchart.prevPage();
-		});
-		rollchart.on("next",next);
-		rollchart.on("prev",prev);
-		rollchart.off("next",next);
-		rollchart.off("prev",prev);
+		rollchart.setWidth(600);
 	});
-	function next(){
-			alert("123")
-	}
-	function prev(){
-			alert("321")
-	}
 });
