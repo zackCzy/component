@@ -24,7 +24,6 @@ define(['jquery'], function($) {
 		 * @method setHeight   设置轮播高度
 		 * @method nextPage   下一张滚图
 		 * @method prevPage   上一张滚图
-		 * @method prevPage   上一张滚图
 	 * */
 	function Rollchart() {
 		//私有滚图JQ对象
@@ -44,6 +43,11 @@ define(['jquery'], function($) {
 		 * 				times:int(默认5000)//轮播时间
 		 * 				phone:Boolean//是否使用手机拖动事件
 		 * 				Loop:Boolean//是否循环播放
+		 * 				autoScale:{imgSize}  int 图片大小 进行默认居中显示
+		 * 				select{over,out} {//选择鼠标悬浮样式
+		 * 								   over:{backgrount:"#ffff"},
+		 * 								   out:{backgrount:"#ffff"}
+		 * 								  }
 		 * 			}
 		 * @param element 将初始化滚轮添加到Dom对象 支持选择器语法
 		 * */
@@ -84,6 +88,7 @@ define(['jquery'], function($) {
 				"z-index": 1,
 			}).hover(function() {
 				clearInterval(that.time);
+				that.time=null;
 			}, function(){
 				timeOpen.call(that);
 			});
@@ -115,7 +120,6 @@ define(['jquery'], function($) {
 				selectUl:selectUl
 			}
 			for (var i = 0; i < that.images.urls.length; i++) {
-				//"margin-left":-(-that.images.width)/2,
 				(function(n) {	
 					$("<li class='rollchart-global-control'></li>").append(
 						$("<a class='rollchart-global-control'></a>").attr({
@@ -126,24 +130,28 @@ define(['jquery'], function($) {
 						}).css({
                            width:that.images.width,
 						   height:that.images.height,
-                           display:"block"
+                           "display":"block",
+                           "margin":"auto",
 						}).append(
-							$("<img class='rollchart-global-control'/>").attr({
+							$("<img class='rollchart-global-control rollchart-img'/>").attr({
 								src: that.images.urls[i],
 								title: that.images.alts[i],
 								alt: that.images.alts[i]
 							}).css({
-								width:that.images.width,
+								width:(that.images.autoScale!=null ? that.images.autoScale:that.images.width),
 								height:that.images.height,
-								"background-position":"center center"
+								"margin":"auto",
+								"margin-left":(that.images.autoScale!=null ? -(that.images.autoScale-that.images.width)/2:0)
 							})
 						)	
+						
 					).css({
 						float: "left",
 						width: that.images.width,
-						height: that.images.height
+						height: that.images.height,
+						display:"block",
+						overflow:"hidden"
 					}).appendTo(rollchartUl);
-
 					selectUl.append(
 						$("<li></li>")
 						.css({
@@ -155,15 +163,16 @@ define(['jquery'], function($) {
 							cursor: "pointer",
 							float: "left"
 						})
-						.on("mouseover", function() {
+						.hover(function() {
 							clearInterval(that.time);
-							console.log(that.time)
+							that.time=null;
 							$("li",selectUl).eq(that.images.count).css(that.images.select.out).end().eq(n).css(that.images.select.over);
 							that.images.count = n;
 							$(rollchartUl).stop().animate({
 								left: -(that.images.count * that.images.width)
 							}, 500);
-							//timeOpen.call(that);
+						},function(){
+							timeOpen.call(that);
 						})
 					);
 				})(i);
@@ -212,7 +221,13 @@ define(['jquery'], function($) {
 		},
 		setWidth:function(width){
 			this.images.width=width;
-			$(".rollchart-global-control").css("width",width);
+			var temp=$(".rollchart-global-control").css("width",width);
+			if(this.images.autoScale!=null){
+				$(".rollchart-img").css({
+					width:this.images.autoScale,			
+					"margin-left": -(this.images.autoScale-this.images.width)/2
+				})
+			}
 		},
 		setHeight:function(height){
 			this.images.height=height;
@@ -274,13 +289,16 @@ define(['jquery'], function($) {
 	function phoneDrag(node){
 		node.flag=false;
 		var that = this;
+		node.move=false;
 		node.addEventListener("touchstart",function(event){
 			node.flag=true;
 			clearInterval(that.time);
+			that.time=null;
 			node.mx=event.touches[0].pageX+that.images.width*that.images.count;
 		});
 		node.addEventListener("touchmove",function(event){
 			if(node.flag){
+				node.move=true;
 				event.preventDefault();
 				var speed=event.touches[0].pageX-node.mx;
 				if(speed>0||speed<-that.images.width*(that.images.urls.length-1)){
@@ -294,7 +312,10 @@ define(['jquery'], function($) {
 		});
 		node.addEventListener("touchend",function(event){
 			if(node.flag){
-               event.preventDefault();
+				if(node.move){
+					event.preventDefault();
+					node.move=false;
+				}
                 node.flag=false;
 				var realLeft=-(that.images.count * that.images.width);
 				var currentLeft=parseInt($(node).css("left"));
@@ -313,9 +334,11 @@ define(['jquery'], function($) {
 	}
 	function timeOpen() {	
 		var that=this;
-		this.time = setInterval(function() {
-			that.nextPage();
-		}, this.images.times);
+		if(that.time==null){
+			this.time = setInterval(function() {
+				that.nextPage();
+			}, this.images.times);	
+		}
 	}
 	//返回模块对象
 	return {

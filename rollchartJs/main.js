@@ -13,9 +13,10 @@ require(['jquery','rollchart'],function($,r){
 		var rollchart=new r.Rollchart();
 		rollchart.init({
 			image:[img1,img2],
-			height:300,
+			height:320,
 			alts:["环球高富1","环球高富2"],
-			phone:true
+			phone:true,
+			autoScale:1920
 		},"body");
 		rollchart.setWidth(600);
 	});
