@@ -19,11 +19,11 @@ require(['jquery','rollchart'],function($,r){
 			phone:true,
 			autoScale:1920
 		},"body");
-	});
-	$("#next").click(function(){
-		rollchart.nextPage();
-	});
-	$("#prev").click(function(){
-		rollchart.prevPage();
+		$("#next").click(function(){
+			rollchart.nextPage();
+		});
+		$("#prev").click(function(){
+			rollchart.prevPage();
+		});
 	});
 });
