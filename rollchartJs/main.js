@@ -14,10 +14,16 @@ require(['jquery','rollchart'],function($,r){
 		rollchart.init({
 			image:[img1,img2],
 			height:320,
+			width:1000,
 			alts:["环球高富1","环球高富2"],
 			phone:true,
 			autoScale:1920
 		},"body");
-		rollchart.setWidth(600);
+	});
+	$("#next").click(function(){
+		rollchart.nextPage();
+	});
+	$("#prev").click(function(){
+		rollchart.prevPage();
 	});
 });
