@@ -34,19 +34,20 @@ define(['jquery'], function($) {
 			 * <pre>滚图初始化函数</pre>
 			 * @param images 初始化字典
 			 * {
-			 * hrefs:Array,//图片点击连接地址
-			 * images:Array(new Image),//图片对象数组
-			 * alts:Array,//图像title 以及alt
-			 * width:int,(默认全屏)//轮播宽度
-			 * height:int,(默认全屏)//轮播高度
-			 * times:int(默认5000)//轮播时间
-			 * phone:Boolean//是否使用手机拖动事件
-			 * Loop:Boolean//是否循环播放
-			 * autoScale:{imgSize} int 图片大小 进行默认居中显示
-			 * select{over,out} {//选择鼠标悬浮样式
-			 * over:{backgrount:"#ffff"},
-			 * out:{backgrount:"#ffff"}
-			 * }
+			 * 	hrefs:Array,//图片点击连接地址
+			 * 	images:Array(new Image),//图片对象数组
+			 * 	alts:Array,//图像title 以及alt
+			 * 	width:int,(默认全屏)//轮播宽度
+			 * 	height:int,(默认全屏)//轮播高度
+			 * 	times:int(默认5000)//轮播时间
+			 * 	phone:Boolean//是否使用手机拖动事件
+			 * 	Loop:Boolean//是否循环播放
+			 * 	autoScale:{imgSize} int 图片大小 进行默认居中显示
+			 * 	select{over,out} {//选择鼠标悬浮样式
+			 * 		over:{backgrount:"#ffff"},
+			 * 		out:{backgrount:"#ffff"}
+			 * 	}
+			 *  cur:true  是否轮播  (默认为true轮播)
 			 * }
 			 * @param element 将初始化滚轮添加到Dom对象 支持选择器语法
 			 * */
@@ -63,6 +64,7 @@ define(['jquery'], function($) {
 				this.images.image = [];
 				this.images.urls = [];
 				this.images.hrefs = [];
+				this.images.car = true;
 				for (var i = 0; i < images.image.length; i++) {
 					this.images.urls[i] = images.image[i].src;
 					this.images.hrefs[i] = "#";
@@ -92,7 +94,7 @@ define(['jquery'], function($) {
 					clearInterval(that.time);
 					that.time = null;
 				}, function() {
-					timeOpen.call(that);
+					that.images.car && timeOpen.call(that);
 				});
 				//创建图片列表
 				var rollchartUl = $("<ul></ul>").css({
@@ -108,7 +110,7 @@ define(['jquery'], function($) {
 				if (this.images.phone) {
 					phoneDrag.call(this, rollchartUl.get(0));
 				}
-				var selectUl = $("<ul style='width:" + (that.images.urls.length * 28 + 15) + "px;'></ul>").css({
+				var selectUl = $("<ul style='width:" + (that.images.urls.length * 28 + 19) + "px;' class='rollchart_selectUl_gf'></ul>").css({
 					"list-style": "none",
 					display: "block",
 					height: "30px",
@@ -157,8 +159,8 @@ define(['jquery'], function($) {
 						selectUl.append(
 							$("<li></li>")
 							.css({
-								width: "13px",
-								height: "13px",
+								width: "16px",
+								height: "16px",
 								background: (i == 0 ? (that.images.select.over.background) : (that.images.select.out.background)),
 								"border-radius": "13px",
 								margin: (i == 0 ? "6px 15px 0 10px" : "6px 15px 0 0"),
@@ -174,7 +176,7 @@ define(['jquery'], function($) {
 									left: -(that.images.count * that.images.width)
 								}, 500);
 							}, function() {
-								timeOpen.call(that);
+								that.images.car && timeOpen.call(that);
 							})
 						);
 					})(i);
@@ -189,7 +191,7 @@ define(['jquery'], function($) {
 					}).append(selectUl)
 				);
 				//定时器开启
-				timeOpen.call(that);
+				that.images.car && timeOpen.call(that);
 				if (element != null && $(element).get(0) != undefined) {
 					$(element).append(rollchart);
 				}
@@ -198,6 +200,9 @@ define(['jquery'], function($) {
 			//Protype获取轮播Dom对象
 			getRollchart: function() {
 				return rollcharts;
+			},
+			getSelectUl: function() {
+				return this.ul.selectUl;
 			},
 			//Protype获取下一张轮播
 			nextPage: function() {
@@ -216,7 +221,7 @@ define(['jquery'], function($) {
 			getIndex: function() { //或许当前轮播位置
 				return this.images.count;
 			},
-			gerIndexDom: function(index) { //或许当前轮播位置ImgDom元素
+			getIndexDom: function(index) { //或许当前轮播位置ImgDom元素
 				return $("li img", rollchartUl).get(index);
 			},
 			setWidth: function(width) {
@@ -228,7 +233,8 @@ define(['jquery'], function($) {
 						"margin-left": -(this.images.autoScale - this.images.width) / 2
 					});
 					this.ul.rollchartUl.css({
-						left: -(this.images.count * this.images.width)
+						left: -(this.images.count * this.images.width),
+						width: this.images.width * this.images.urls.length
 					});
 				}
 			},
@@ -294,47 +300,52 @@ define(['jquery'], function($) {
 		node.flag = false;
 		var that = this;
 		node.move = false;
-		node.addEventListener("touchstart", function(event) {
-			node.flag = true;
-			clearInterval(that.time);
-			that.time = null;
-			node.mx = event.touches[0].pageX + that.images.width * that.images.count;
-		});
-		node.addEventListener("touchmove", function(event) {
-			if (node.flag) {
-				node.move = true;
-				event.preventDefault();
-				var speed = event.touches[0].pageX - node.mx;
-				if (speed > 0 || speed < -that.images.width * (that.images.urls.length - 1)) {
-					node.flag = false;
-				} else {
-					$(node).css({
-						left: speed
-					});
-				}
-			}
-		});
-		node.addEventListener("touchend", function(event) {
-			if (node.flag) {
-				if (node.move) {
+		try {
+
+			node.addEventListener("touchstart", function(event) {
+				node.flag = true;
+				clearInterval(that.time);
+				that.time = null;
+				node.mx = event.touches[0].pageX + that.images.width * that.images.count;
+			});
+			node.addEventListener("touchmove", function(event) {
+				if (node.flag) {
+					node.move = true;
 					event.preventDefault();
-					node.move = false;
+					var speed = event.touches[0].pageX - node.mx;
+					if (speed > 0 || speed < -that.images.width * (that.images.urls.length - 1)) {
+						node.flag = false;
+					} else {
+						$(node).css({
+							left: speed
+						});
+					}
 				}
-				node.flag = false;
-				var realLeft = -(that.images.count * that.images.width);
-				var currentLeft = parseInt($(node).css("left"));
-				if (realLeft - currentLeft > that.images.width / 2) {
-					that.nextPage();
-				} else if (currentLeft - realLeft > that.images.width / 2) {
-					that.prevPage();
-				} else {
-					$(node).animate({
-						left: realLeft
-					});
+			});
+			node.addEventListener("touchend", function(event) {
+				if (node.flag) {
+					if (node.move) {
+						event.preventDefault();
+						node.move = false;
+					}
+					node.flag = false;
+					var realLeft = -(that.images.count * that.images.width);
+					var currentLeft = parseInt($(node).css("left"));
+					if (realLeft - currentLeft > that.images.width / 2) {
+						that.nextPage();
+					} else if (currentLeft - realLeft > that.images.width / 2) {
+						that.prevPage();
+					} else {
+						$(node).animate({
+							left: realLeft
+						});
+					}
+					that.images.car && timeOpen.call(that);
 				}
-				timeOpen.call(that);
-			}
-		});
+			});
+		} catch (e) {
+			//TODO handle the exception
+		}
 	}
 
 	function timeOpen() {
